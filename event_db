@@ -1,0 +1,27 @@
+[
+    {
+        "date": "19/5/2016", 
+        "id": "c441", 
+        "note": "FOO"
+    }, 
+    {
+        "date": "19/5/2016", 
+        "id": "ebd0", 
+        "note": "BAR"
+    }, 
+    {
+        "date": "19/5/2016", 
+        "id": "bf01", 
+        "note": "BAZ"
+    }, 
+    {
+        "date": "31/5/2016", 
+        "id": "4730", 
+        "note": "Fine di maggio"
+    }, 
+    {
+        "date": "30/6/2016", 
+        "id": "1426", 
+        "note": "Fine di giugno"
+    }
+]
