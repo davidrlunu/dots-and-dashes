@@ -13,6 +13,7 @@ import json
 now = datetime.datetime.now()
 year = now.year
 month = now.month
+day = now.day
 _date_separator = '/'
 _date_format = '%d' + _date_separator + '%m' + _date_separator + '%Y'
 _db_path = os.environ['HOME'] + '/.conky/calendar/event_db.json'
@@ -20,6 +21,8 @@ _ignore_cache = True
 # Calculate how many chars to display on a single row of an event annotation, based on the width of the conky
 _note_length = 49
 
+_previous_notes = 2
+_max_notes = 5
 
 def isCached(file_path):
     if _ignore_cache:
@@ -63,7 +66,7 @@ def compareDates(actual_date, date_from_db):
 
 
 def dateIndexParser(dateList):
-    return ''.join([v.rjust(2, '0') for v in dateList[::-1]])
+    return ''.join([str(v).rjust(2, '0') for v in dateList[::-1]])
 
 
 def dbRead():
@@ -71,8 +74,32 @@ def dbRead():
         with open(_db_path) as fileread:
             return json.load(fileread)
     except IOError:
-        return []
+        print("Loading default DB for testing purpose. Replace with [] in production.")
+        return [
+            {
+                "date": "11/5/2016", 
+                "id": "c441", 
+                "note": "Lorem ipsum dolor siat met e poi non ricordo mai come continua sta frase di testo dummy però aggiungerò del mio, tanto questo è solo un test",
+                "important": True
+            }, 
+            {
+                "date": "12/5/2016", 
+                "id": "ebd0", 
+                "note": "FOO"
+            }, 
+            {
+                "date": "19/5/2016", 
+                "id": "bf01", 
+                "note": "BAR"
+            }, 
+            {
+                "date": "30/6/2016", 
+                "id": "1426", 
+                "note": "BAZ"
+            }
+        ]
 
+today = dateIndexParser([day, month, year])
 dblist = dbRead()
 
 def updateCalendar(m=month, y=year):
@@ -243,9 +270,7 @@ def updateEvents():
 
     eventlist = ''
     temp_notes = []
-
-    previous_notes = 2
-    max_notes = 5
+    note_count = 0
 
     for eventIndex, event in enumerate(dblist):
 
@@ -255,9 +280,19 @@ def updateEvents():
             willChange = dateIndexParser(dblist[eventIndex + 1]["date"].split(_date_separator))\
                     > dateIndexParser(event["date"].split(_date_separator))
 
-        temp_notes.append('[ ' + event['id'] + ' ] ' + event["note"])
 
-        if willChange or last:
+        # printable IF is important AND in range, IF date is > today's date
+        printable = eventIndex + _previous_notes < len(dblist) and dateIndexParser(dblist[eventIndex + _previous_notes]["date"].split(_date_separator)) >= today and 'important' in event and event['important'] == True or dateIndexParser(event["date"].split(_date_separator)) > today
+        
+        if printable:
+            temp_notes.append('[ ' + event['id'] + ' ] ' + event["note"])
+            note_count += 1
+
+        # check if _max_notes is reached
+        note_overflow = note_count >= _max_notes
+
+        # added len(temp_notes) to check if there are things to display actually
+        if (willChange or last or note_overflow) and len(temp_notes):
             note_full = ''
             for note in temp_notes:
                 note_full += spezNote(note, note == temp_notes[0])
@@ -274,6 +309,11 @@ def updateEvents():
 
             if event != dblist[len(dblist) - 1]:
                 eventlist += '\n'
+
+            # break loop if _max_notes is reached
+            if note_overflow:
+                break;
+
             temp_notes = []
 
 
@@ -286,9 +326,6 @@ def updateEvents():
             return
 
     print(eventlist)
-
-
-
 
 def main(argv):
 
