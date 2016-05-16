@@ -1,0 +1,2 @@
+# ignore event_db.json on 1st level
+/event_db.json
