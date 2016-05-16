@@ -244,6 +244,7 @@ def updateEvents():
     eventlist = ''
     temp_notes = []
 
+    max_notes = 5
 
     for eventIndex, event in enumerate(dblist):
 
