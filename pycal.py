@@ -15,7 +15,7 @@ year = now.year
 month = now.month
 _date_separator = '/'
 _date_format = '%d' + _date_separator + '%m' + _date_separator + '%Y'
-_db_path = os.environ['HOME'] + '/.conky/calendar/event_db'
+_db_path = os.environ['HOME'] + '/.conky/calendar/event_db.json'
 _ignore_cache = True
 # Calculate how many chars to display on a single row of an event annotation, based on the width of the conky
 _note_length = 49
