@@ -65,22 +65,6 @@ def compareDates(actual_date, date_from_db):
 def dateIndexParser(dateList):
     return ''.join([v.rjust(2, '0') for v in dateList[::-1]])
 
-def equalDates(dateList1, dateList2):
-    d1 = dateIndexParser(dateList1)
-    d2 = dateIndexParser(dateList2)
-    return d1 == d2
-
-
-def majorDates(dateList1, dateList2):
-    d1 = dateIndexParser(dateList1)
-    d2 = dateIndexParser(dateList2)
-    return d1 > d2
-
-def minorDates(dateList1, dateList2):
-    d1 = dateIndexParser(dateList1)
-    d2 = dateIndexParser(dateList2)
-    return d1 < d2
-
 
 def dbRead():
     try:
@@ -116,8 +100,11 @@ def updateCalendar(m=month, y=year):
                     break
 
                 datel = parseDate(event['date'])
-                if minorDates(datel, current_date):
+                if dateIndexParser(datel) < dateIndexParser(current_date):
                     n = colorCal('sienna', n_pad) if compareDates([n,m,y], datel) else n
+                if dateIndexParser(datel) == dateIndexParser(current_date):
+                    n = colorCal('sienna', 'X') if compareDates([n,m,y], datel) else n
+
                 n = colorCal('darkcyan', n_pad) if compareDates([n,m,y], datel) else n
             n = colorCal('af2445', n_pad) if n==day and m==month and y==year else n
             n = str(n).rjust(2)
