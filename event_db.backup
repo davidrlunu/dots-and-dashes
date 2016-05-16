@@ -7,26 +7,16 @@
     {
         "date": "19/5/2016", 
         "id": "ebd0", 
-        "note": "BAR"
+        "note": "FOO"
     }, 
     {
         "date": "19/5/2016", 
         "id": "bf01", 
-        "note": "BAZ"
+        "note": "BAR"
     }, 
     {
         "date": "30/6/2016", 
         "id": "1426", 
-        "note": "Fine di giugno"
-    }, 
-    {
-        "date": "16/10/2016", 
-        "id": "9d6a", 
-        "note": "Compleanno Khaleesy <3"
-    },
-    {
-        "date": "17/10/2016", 
-        "id": "9d6a", 
-        "note": "Compleanno Khaleesy <3"
+        "note": "BAZ"
     }
 ]
