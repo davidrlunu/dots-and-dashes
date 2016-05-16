@@ -201,13 +201,10 @@ def editEvent(changeid):
                     + '[2] Date: ' + str(obj['date']) + '\n')
             if edit_choice == '1':
                 notes = obj['note']
-                for index, value in enumerate(notes):
-                    print(index, value)
-                edit_this_one = int(input("Chose one note to edit or modify: "))
                 new_note = str(input("Change old note:    « "\
-                        + str(obj['note'][edit_this_one])\
+                        + str(obj['note'])\
                         + " »    to new note:\n"))
-                obj['note'][edit_this_one] = new_note
+                obj['note'] = new_note
                 print("New note updated")
                 break
 
@@ -249,7 +246,7 @@ def spezNote(note, first_note):
         to = frm + _note_length
         note_partial = note[frm:to]
         if not (first_note and row_index == 1):
-            note_partial = '\n' + note_partial.rjust(20 + len(note_partial))
+            note_partial = '\n' + note_partial.rjust(14 + len(note_partial))
         note_full += note_partial
 
     return note_full
@@ -267,9 +264,9 @@ def updateEvents():
         last = eventIndex == (len(dblist) - 1);
         if not last:
             willChange = dateIndexParser(dblist[eventIndex + 1]["date"].split(_date_separator))\
-                    > dateIndexParser(event["date"])
+                    > dateIndexParser(event["date"].split(_date_separator))
 
-        temp_notes.append('[ ' + event['id'] + ' ]' + event["note"])
+        temp_notes.append('[ ' + event['id'] + ' ] ' + event["note"])
 
         if willChange or last:
             note_full = ''
@@ -283,13 +280,11 @@ def updateEvents():
                     + _date_separator + d_parse[1].rjust(2, '0')\
                     + _date_separator + d_parse[2]
 
-            # eventlist += '[ ' + event['id'] + ' ] ' + colorCal('darkcyan', d_parse) + ' ' + note_full
-            eventlist += '[ ' + colorCal('darkcyan', d_parse) + ' ]' + ' ' + note_full
+            eventlist += '[ ' + colorCal('darkcyan', d_parse) + ' ]' + note_full
 
 
             if event != dblist[len(dblist) - 1]:
                 eventlist += '\n'
-            # temp_notes = [event['note']]
             temp_notes = []
 
 
