@@ -19,7 +19,7 @@ _date_format = '%d' + _date_separator + '%m' + _date_separator + '%Y'
 _db_path = os.environ['HOME'] + '/.conky/calendar/event_db.json'
 _ignore_cache = True
 # Calculate how many chars to display on a single row of an event annotation, based on the width of the conky
-_note_length = 49
+_note_length = 48
 
 _previous_notes = 2
 _max_notes = 5
@@ -74,30 +74,7 @@ def dbRead():
         with open(_db_path) as fileread:
             return json.load(fileread)
     except IOError:
-        print("Loading default DB for testing purpose. Replace with [] in production.")
-        return [
-            {
-                "date": "11/5/2016", 
-                "id": "c441", 
-                "note": "Lorem ipsum dolor siat met e poi non ricordo mai come continua sta frase di testo dummy però aggiungerò del mio, tanto questo è solo un test",
-                "important": True
-            }, 
-            {
-                "date": "12/5/2016", 
-                "id": "ebd0", 
-                "note": "FOO"
-            }, 
-            {
-                "date": "19/5/2016", 
-                "id": "bf01", 
-                "note": "BAR"
-            }, 
-            {
-                "date": "30/6/2016", 
-                "id": "1426", 
-                "note": "BAZ"
-            }
-        ]
+        return []
 
 today = dateIndexParser([day, month, year])
 dblist = dbRead()
@@ -152,7 +129,7 @@ def updateCalendar(m=month, y=year):
 
 
 
-def saveEvent(arguments):
+def saveEvent(arguments, _flag = False):
 
     _date = _note = stringed_list = ''
     _id = str(uuid.uuid4())[:4]
@@ -193,6 +170,8 @@ def saveEvent(arguments):
         index += 1
 
     event = { "date": _date, "note": _note, "id": _id}
+    if _flag:
+        event.update({"important": _flag})
     print("Insert to index: ", index)
     dblist.insert(index, event)
 
@@ -211,12 +190,13 @@ def editEvent(changeid):
         current_date = dateIndexParser(obj["date"].split(_date_separator))
         if changeid == obj['id']:
             edit_choice = input("Want to change this event's:\n"\
-                    + '[1] Note: ' + str(obj['note']) + '\n'\
-                    + '[2] Date: ' + str(obj['date']) + '\n')
+                    + '[1] Note: ' + str(obj['note'][:30]) + '....' + '\n'\
+                    + '[2] Date: ' + str(obj['date']) + '\n'\
+                    + '[3] Mark / Unmark as important: ' + '\n')
             if edit_choice == '1':
                 notes = obj['note']
                 new_note = str(input("Change old note:    « "\
-                        + str(obj['note'])\
+                        + str(obj['note'][:30])\
                         + " »    to new note:\n"))
                 obj['note'] = new_note
                 print("New note updated")
@@ -231,6 +211,12 @@ def editEvent(changeid):
                     saveEvent([obj['date'], obj['note'], obj['id']])
                     print("New date updated")
                     sys.exit(2)
+            elif edit_choice == '3':
+                if 'important' in obj:
+                    obj.pop("important", None)
+                else:
+                    obj.update({"important": True})
+
         index += 1
 
     json_list = json.dumps(dblist)
@@ -255,12 +241,15 @@ def spezNote(note, first_note):
 
     n_rows = math.ceil(len(note) / _note_length)
     note_full = ''
+    padder = 14
+
     for row_index in range(1, n_rows + 1):
         frm = (row_index - 1) * _note_length
         to = frm + _note_length
         note_partial = note[frm:to]
         if not (first_note and row_index == 1):
-            note_partial = '\n' + note_partial.rjust(14 + len(note_partial))
+            padder = 23 if row_index > 1 else padder
+            note_partial = '\n' + note_partial.rjust(padder + len(note_partial))
         note_full += note_partial
 
     return note_full
@@ -282,8 +271,16 @@ def updateEvents():
 
 
         # printable IF is important AND in range, IF date is > today's date
-        printable = eventIndex + _previous_notes < len(dblist) and dateIndexParser(dblist[eventIndex + _previous_notes]["date"].split(_date_separator)) >= today and 'important' in event and event['important'] == True or dateIndexParser(event["date"].split(_date_separator)) > today
-        
+        #valid_p stands for valid printable
+
+        valid_p = eventIndex + _previous_notes
+        printable = valid_p < len(dblist)\
+                and dateIndexParser(dblist[valid_p]["date"].split(_date_separator))\
+                >= today and 'important' in event\
+                and event['important'] == True\
+                or dateIndexParser(event["date"].split(_date_separator))\
+                > today
+
         if printable:
             temp_notes.append('[ ' + event['id'] + ' ] ' + event["note"])
             note_count += 1
@@ -329,19 +326,22 @@ def updateEvents():
 
 def main(argv):
 
-    flag = ''
+    option = ''
+    flag = False
     arguments = []
 
     for i, arg in enumerate(argv):
         if i == 0:
-            flag = arg
+            option = arg
         else:
             arguments.append(arg)
 
-    if flag == '':
-        flag = '-c'
 
-    if flag == '-c':
+
+    if option == '':
+        option = '-c'
+
+    if option == '-c':
         if len(arguments) == 0:
 
             if not isCached('/tmp/calendar'):
@@ -366,7 +366,7 @@ def main(argv):
                     updateCalendar(m,y)
             sys.exit(0)
 
-    elif flag == '-t':
+    elif option == '-t':
         if not isCached('/tmp/eventlist'):
             updateEvents()
         else:
@@ -375,20 +375,24 @@ def main(argv):
 
         sys.exit(2)
 
-    elif flag == '-e':
-        if len(arguments):
-            saveEvent(arguments)
-            updateEvents()
-            updateCalendar()
+    elif option == '-e':
+        if len(arguments) == 0:
+            print('Please add an event in the form: DD/[MM]/[YYYY] "Note of the event"')
+        if arguments[0] == '--important' or '!':
+            flag = True
+            arguments = arguments[1:]
+        saveEvent(arguments, flag)
+        updateEvents()
+        updateCalendar()
 
-    elif flag == '-m':
+    elif option == '-m':
         if len(arguments) == 0:
             sys.exit(0)
         else:
             id_mod = ''.join(arguments)
             editEvent(id_mod)
 
-    elif flag == '-d':
+    elif option == '-d':
         yes = set(['yes', 'y', 'Y', 'ye', 'YES'])
         no = set(['n', 'N', 'No', 'NO', 'nope', ''])
         if len(arguments) == 0:
