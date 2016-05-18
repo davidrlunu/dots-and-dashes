@@ -1,29 +1,43 @@
 ﻿#! /usr/bin/python3
 # vim: set fileencoding=UTF-8 :
+
+# pycal is a calendar viewr made for being integratred with conky
 import sys
 import math
-import fileinput
 import os.path, time
 import calendar
 import datetime
 import uuid
 import json
-
+try:
+    import config
+except ImportError:
+    print('Could not find config file')
+    sys.exit(1)
 
 now = datetime.datetime.now()
 year = now.year
 month = now.month
 day = now.day
-_date_separator = '/'
-_date_format = '%d' + _date_separator + '%m' + _date_separator + '%Y'
-_db_path = os.environ['HOME'] + '/.conky/calendar/event_db.json'
-_ignore_cache = True
-# Calculate how many chars to display on a single row of an event annotation, based on the width of the conky
-_note_length = 48
 
-_previous_notes = 2
-_max_notes = 5
+#User configs grabbed from config.py
+_grid = config.grid
+_date_separator = config.date_separator
+_date_format = config.date_format
+_db_path = os.environ['HOME'] + config.db_path
+_ignore_cache = config.ignore_cache
+_note_length = config.note_length
+_previous_notes = config.previous_notes
+_max_notes = config.max_notes
 
+_color_header = config.color_header if hasattr(config, 'color_header') else ''
+_color_grid = config.color_grid if hasattr(config, 'color_grid') else ''
+_color_currday = config.color_currday if hasattr(config, 'color_currday') else ''
+_color_event = config.color_event if hasattr(config, 'color_event') else ''
+_color_pevent = config.color_pevent if hasattr(config, 'color_pevent') else ''
+
+
+#Routine that serves the purpose of checking if the cacheing is active or not.
 def isCached(file_path):
     if _ignore_cache:
         return False
@@ -34,7 +48,7 @@ def isCached(file_path):
         return False
 
 
-# Date validation based on input
+# Date validation based on input, controlling if the elements forming the date are in the right order.
 
 def validDate(date_string):
     try:
@@ -45,17 +59,26 @@ def validDate(date_string):
     return True
 
 
-def colorCal(color='', val=''):
-    if val:
+# Function that colors various elements in the stamp process.
+def colorIt(color='', val=''):
+    if val and color != '':
         return '${color ' + color + '}' + str(val) + '${color}'
-    if color:
-        color = ' ' + color
+    else:
+        return str(val)
     return '${color'+color+'}'
 
-
+# Given a date under the form of string '01/01/2000', transform it in a list ['01', '01', '2000']
 def parseDate(date=''):
     return date.split(_date_separator)
 
+
+# Tranforms a date under the form of a list ['01', '01', '2000'] into a unified, reverted string
+# padding it with '0' if 'day' or 'month' are single digit numbers
+def uniDate(dateList):
+    return ''.join([str(v).rjust(2, '0') for v in dateList[::-1]])
+
+
+# Self explanotory function :^) 
 def compareDates(actual_date, date_from_db):
     if len(actual_date) == len(date_from_db) == 3:
         for i in range(3):
@@ -65,10 +88,7 @@ def compareDates(actual_date, date_from_db):
     return False
 
 
-def dateIndexParser(dateList):
-    return ''.join([str(v).rjust(2, '0') for v in dateList[::-1]])
-
-
+# Read the JSON database where the events are saved and return a list of objects from it.
 def dbRead():
     try:
         with open(_db_path) as fileread:
@@ -76,49 +96,72 @@ def dbRead():
     except IOError:
         return []
 
-today = dateIndexParser([day, month, year])
+today = uniDate([day, month, year])
+# dblist will always be a list of objects now
 dblist = dbRead()
 
+
+# Calendar stamp routine. This fucntion takes month and year as arguments and stamps the calendar for 
+# the given 'm' and y'
 def updateCalendar(m=month, y=year):
     m = int(m)
     y = int(y)
-
+    # 'cal' returns a list[calendar of the month] of lists[weeks of the calendar]
     cal = calendar.monthcalendar(y, m)
     m_name = calendar.month_name[m]
     w_header = calendar.weekheader(2)
 
+    # We use a string 'str_calendar' to manipulate the output from 'cal' because it is easier to elaborate
+    # elements from a list and concatenate a string rather than appending to another list.
     str_calendar = ''
-    str_calendar += (colorCal('494a5b') + '│' + str(y).center(20, ' ') + '│' + '\n')
-    str_calendar += ('│' + m_name.center(20, ' ').upper() + '│' + '\n' )
-    str_calendar += ('│' + w_header.upper() + '│' + colorCal() + '\n')
-    str_calendar += (colorCal('494a5b', '├─ ┼  ┼  ┼  ┼  ┼  ┼ ─┤') + '\n')
+    str_calendar += colorIt(_color_header, '│' + str(y).center(20, ' ') + '│') + '\n'
+    str_calendar += colorIt(_color_header, '│' + m_name.center(20, ' ').upper() + '│') + '\n'
+    str_calendar += colorIt(_color_header, '│' + w_header.upper() + '│') + '\n'
+    if _grid:
+        str_calendar += colorIt(_color_grid, '├─ ┼  ┼  ┼  ┼  ┼  ┼ ─┤') + '\n'
+    else:
+        str_calendar += colorIt(_color_grid, '└────────────────────┘') + '\n'
+
+
+    # We start parsing the [cal[we..][..ek]] calendar
     for rows, cols in enumerate(cal):
         l1 = []
         day = now.day
         current_date = [str(day), str(month), str(year)]
         for n in cols:
             n = '' if n==0 else n
+            # Pad single digit dates
             n_pad = str(n).rjust(2)
+            # Here we start checking for events in the database, to be displayed in the calendar
             for event in dblist:
                 if not n:
                     break
-
+                # At every cicle, we parse the [date] from the db into a 'date':
+                # if the date is past, color it with the color chose by the user in the config file
+                # if the date is the same as the current day (a.k.a event today) then mark it with a 'X'
                 datel = parseDate(event['date'])
-                if dateIndexParser(datel) < dateIndexParser(current_date):
-                    n = colorCal('sienna', n_pad) if compareDates([n,m,y], datel) else n
-                if dateIndexParser(datel) == dateIndexParser(current_date):
-                    n = colorCal('sienna', 'X') if compareDates([n,m,y], datel) else n
+                if uniDate(datel) < uniDate(current_date):
+                    n = colorIt(_color_pevent, n_pad) if compareDates([n,m,y], datel) else n
+                if uniDate(datel) == uniDate(current_date):
+                    n = colorIt(_color_pevent, 'X') if compareDates([n,m,y], datel) else n
 
-                n = colorCal('darkcyan', n_pad) if compareDates([n,m,y], datel) else n
-            n = colorCal('af2445', n_pad) if n==day and m==month and y==year else n
+                n = colorIt(_color_event, n_pad) if compareDates([n,m,y], datel) else n
+            n = colorIt(_color_currday, n_pad) if n==day and m==month and y==year else n
             n = str(n).rjust(2)
             l1.append(n)
-        str_calendar += ( colorCal('494a5b') + '│' + colorCal() + ' '.join(map(str,l1)) + colorCal('494a5b') + '│' + colorCal() + '\n')
 
-        if rows != (len(cal)-1):
-            str_calendar += (colorCal('494a5b') + '├──┼──┼──┼──┼──┼──┼──┤' + colorCal() + '\n')
+        if _grid:
+            str_calendar += colorIt(_color_grid, '│') + ' '.join(map(str,l1)) + colorIt(_color_grid, '│') + '\n'
+        else:
+            str_calendar += ' ' + ' '.join(map(str,l1)) + '\n'
 
-    str_calendar += (colorCal('494a5b') + '╰──┴──┴──┴──┴──┴──┴──╯' + colorCal() + '\n')
+        if rows != (len(cal)-1) and _grid:
+            str_calendar += colorIt(_color_grid, '├──┼──┼──┼──┼──┼──┼──┤') + '\n'
+        elif not _grid:
+            str_calendar += '\n'
+
+    if _grid:
+        str_calendar += colorIt(_color_grid, '╰──┴──┴──┴──┴──┴──┴──╯') + '\n'
 
     if not _ignore_cache:
         with open('/tmp/calendar', 'w+') as calendar_stamp:
@@ -157,13 +200,13 @@ def saveEvent(arguments, _flag = False):
 
 
 
-    new_date = dateIndexParser(_date.split(_date_separator))
+    new_date = uniDate(_date.split(_date_separator))
 
     index = 0
     global dblist
 
     for obj in dblist:
-        current_date = dateIndexParser(obj["date"].split(_date_separator))
+        current_date = uniDate(obj["date"].split(_date_separator))
         if new_date < current_date:
             break
 
@@ -187,7 +230,7 @@ def editEvent(changeid):
     global dblist
     index = 0
     for obj in dblist:
-        current_date = dateIndexParser(obj["date"].split(_date_separator))
+        current_date = uniDate(obj["date"].split(_date_separator))
         if changeid == obj['id']:
             edit_choice = input("Want to change this event's:\n"\
                     + '[1] Note: ' + str(obj['note'][:30]) + '....' + '\n'\
@@ -237,6 +280,8 @@ def rmEvent(id_mod):
 
 
 
+# This method serves the purpose of calculating how long a 'note' of an event is, in order to break it into
+# new lines, every '_note_length' characters, where '_note_length' is defined by the user.
 def spezNote(note, first_note):
 
     n_rows = math.ceil(len(note) / _note_length)
@@ -266,8 +311,8 @@ def updateEvents():
         willChange = False
         last = eventIndex == (len(dblist) - 1);
         if not last:
-            willChange = dateIndexParser(dblist[eventIndex + 1]["date"].split(_date_separator))\
-                    > dateIndexParser(event["date"].split(_date_separator))
+            willChange = uniDate(dblist[eventIndex + 1]["date"].split(_date_separator))\
+                    > uniDate(event["date"].split(_date_separator))
 
 
         # printable IF is important AND in range, IF date is > today's date
@@ -275,10 +320,10 @@ def updateEvents():
 
         valid_p = eventIndex + _previous_notes
         printable = valid_p < len(dblist)\
-                and dateIndexParser(dblist[valid_p]["date"].split(_date_separator))\
+                and uniDate(dblist[valid_p]["date"].split(_date_separator))\
                 >= today and 'important' in event\
                 and event['important'] == True\
-                or dateIndexParser(event["date"].split(_date_separator))\
+                or uniDate(event["date"].split(_date_separator))\
                 > today
 
         if printable:
@@ -301,7 +346,7 @@ def updateEvents():
                     + _date_separator + d_parse[1].rjust(2, '0')\
                     + _date_separator + d_parse[2]
 
-            eventlist += '[ ' + colorCal('darkcyan', d_parse) + ' ]' + note_full
+            eventlist += '[ ' + colorIt(_color_event, d_parse) + ' ]' + note_full
 
 
             if event != dblist[len(dblist) - 1]:
@@ -323,6 +368,9 @@ def updateEvents():
             return
 
     print(eventlist)
+
+
+
 
 def main(argv):
 
@@ -378,7 +426,8 @@ def main(argv):
     elif option == '-e':
         if len(arguments) == 0:
             print('Please add an event in the form: DD/[MM]/[YYYY] "Note of the event"')
-        if arguments[0] == '--important' or '!':
+            sys.exit(0)
+        if arguments[0] == '--important':
             flag = True
             arguments = arguments[1:]
         saveEvent(arguments, flag)
@@ -408,6 +457,44 @@ def main(argv):
             rmEvent(id_parse)
 
 
+    elif option == 'h' or '--help':
+        print("\n\
+        \n\
+        Usage: pycal <option> [args]\n\
+        \n\
+        Also, consult the documented config file for more tunings.\n\
+        \n\
+        OPTIONS:\n\
+        \n\
+        -c :  Prints a calendar based on given arguments.\n\
+              \n\
+              arg <none>             Print the current month;\n\
+              arg <month>            Print the calendar for <month> number;\n\
+              arg <month>,<month>,.. Print a list of calendar for each <month> sepcified;\n\
+              arg <month>:<year>,..  Print the calendar or list of calendars for specified <month> and <year>.\n\
+                                          \n\
+                                          \n\
+        -e :  Save event in the database and add optional note to it.\n\
+              \n\
+              arg <date> Saves a day[/<month>/<year>] in the database, print it on the calendar\n\
+                                                      and print it in the conky (if used);\n\
+                  <date> [<comment>] Add note in the form [<date> 'COMMENT'] to the <date> you want to save;\n\
+                  \n\
+                  flag <--important> <date>[<comment>] Save the event as important. Important events\n\
+                                                       will be always displayed in the [-t] option even if \n\
+                                                       they are passed.\n\
+              \n\
+              \n\
+        -m :  Wizard to modify an event based on it's ID.\n\
+              arg <id>;\n\
+              \n\
+              \n\
+        -d :  Remove event based on it's id or entire database.\n\
+              arg <none> Remove entire db;\n\
+              arg <id> Remove event[id].\n\
+              \n\
+              \n\
+        -t :  Display the notes in the db.")
 
 if __name__ == "__main__":
     main(sys.argv[1:])
