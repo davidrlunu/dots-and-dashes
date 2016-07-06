@@ -1,0 +1,16 @@
+alignment tr
+minimum_size 300 100
+maximum_width 300
+gap_x 315
+gap_y 575
+##gap_y 995
+minimum_size 250 20
+maximum_width 250
+default_color a5adff
+color1 494a5b
+TEXT
+${include /home/$USER/.conky/templeterino.conf}
+${execp /home/$USER/.conky/whatsapp_proc_check.sh}
+${image /home/$USER/.conky/Notifs.png -s 40x40 -p 155,35 -n}
+${voffset -3}${goto 230}${font DIN:pixelsize=30}${execp cat /tmp/wa_notifications | head -n 1 | awk '{print $2}'}${font}
+${voffset -30}${execp cat /tmp/wa_notifications | tail -n +2}

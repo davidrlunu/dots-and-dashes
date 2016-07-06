@@ -1,0 +1,15 @@
+# this file goes in ~
+default_color a5adff
+#own_window_argb_visual yes
+#own_window_argb_value 0
+minimum_size 100 40
+maximum_width 100
+alignment top_right
+gap_x 320
+gap_y 690
+# ${voffset -85}${exec cat /tmp/mails | tail -n +2}
+TEXT
+${include /home/$USER/.conky/templeterino.conf}
+${texeci 180 python3 /home/$USER/.conky/mail.py}
+${image /home/$USER/.conky/Mail.png -s 40x40 -p 10,40 -n}
+${goto 85}${font DIN:pixelsize=30}${exec cat /tmp/mails | head -n 1}${font}

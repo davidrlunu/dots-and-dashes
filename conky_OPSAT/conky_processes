@@ -1,0 +1,24 @@
+alignment top_left
+gap_x 670
+gap_y 860
+cpu_avg_samples 2
+net_avg_samples 2
+minimum_size 600 210
+maximum_width 600
+color0 494a5b
+default_color a5adff
+color1 494a5b
+TEXT
+#leet chars: ┤┤└└┴┴┐┐││┘┘┌┌├├┬┬┼┼┴┴── ││ ▽▼△▲▵▴▾▿ ❱❱❰❰
+${goto 130}${font Monospace:pixelsize=15}CPU${font}${goto 292}│${goto 430}${color0}${font Monospace:pixelsize=15}RAM${font}${color}                   
+${include /home/$USER/.conky/templeterino.conf}
+╶┼╴                                     ╶┼╴                                      ╶┼╴
+${execpi 5 top -b -n 1 -o %CPU | head -n 15  | tail -n 8 | awk '{print $12, $9}' | column -t -o "      " | sed 's/^/         /'}
+
+${voffset -120}${color0}${execpi 5 top -b -n 1 -o %MEM | head -n 15  | tail -n 8 | awk '{print $12, $10}' | column -t -o "      " | sed 's/^/${goto 370}/'}${color}
+╶┼╴                                                                              ╶┼╴
+
+
+${goto 70}${color1}${exec grep [0-9] /proc/loadavg | awk '{print $1}'}    ${exec grep [0-9] /proc/loadavg | awk '{print $2}'}    ${exec grep [0-9] /proc/loadavg | awk '{print $3}'}
+${voffset -13}${goto 360}$mem / $memmax - ${fs_used_perc /tmp}% tmp${color}
+${image /home/$USER/.conky/processes.png -p 0,30 -n}

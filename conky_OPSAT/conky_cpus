@@ -1,0 +1,25 @@
+minimum_size 600 600
+maximum_width 600
+alignment tl
+gap_x 650
+gap_y 300
+default_color 494b5a
+own_window_argb_visual yes
+own_window_argb_value 0
+# Lua Load  #
+lua_load ~/.conky/cpu_rings.lua
+lua_draw_hook_pre clock_rings
+TEXT
+${include /home/$USER/.conky/templeterino.conf}
+${voffset 10}${goto 100}${cpu cpu0}%
+${voffset 5}${goto 70}CPU
+${goto 70} 0
+${voffset -45}${goto 520}${cpu cpu1}%
+${voffset 5}${goto 495}CPU
+${goto 495} 1
+${voffset 380}${goto 520}${cpu cpu2}%
+${goto 495}CPU
+${goto 495} 2
+${voffset -40}${goto 100}${cpu cpu3}%
+${voffset 3}${goto 70}CPU
+${goto 70} 3

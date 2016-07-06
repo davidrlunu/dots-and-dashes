@@ -1,0 +1,17 @@
+alignment tl
+minimum_size 540 350
+maximum_width 540
+gap_x 55
+gap_y 765
+default_color 494a5b
+color2 d05400
+color3 b30000
+TEXT
+${include /home/$USER/.conky/templeterino.conf}
+  ╭╴               ╶╮
+       ${color a5adff}SYS LOGS${color }   
+  ╰╴               ╶╯
+${execpi 60 sudo tail -n 15 /var/log/messages | cut -c1-90 | awk '{$1=$2=$4=""; print $0}' | sed -e 's/kernel/${color af2445}kernel${color}/' -e 's/root/${color 23ada0}root${color}/'}
+
+
+  UPTIME: ${execi 60 uptime | awk '{print $3 $4 $5}'}

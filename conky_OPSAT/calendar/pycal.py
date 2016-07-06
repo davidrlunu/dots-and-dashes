@@ -78,7 +78,7 @@ def uniDate(dateList):
     return ''.join([str(v).rjust(2, '0') for v in dateList[::-1]])
 
 
-# Self explanotory function :^) 
+# Self explanotory function :^)
 def compareDates(actual_date, date_from_db):
     if len(actual_date) == len(date_from_db) == 3:
         for i in range(3):
@@ -101,7 +101,7 @@ today = uniDate([day, month, year])
 dblist = dbRead()
 
 
-# Calendar stamp routine. This fucntion takes month and year as arguments and stamps the calendar for 
+# Calendar stamp routine. This fucntion takes month and year as arguments and stamps the calendar for
 # the given 'm' and y'
 def updateCalendar(m=month, y=year):
     m = int(m)
@@ -136,7 +136,7 @@ def updateCalendar(m=month, y=year):
             for event in dblist:
                 if not n:
                     break
-                # At every cicle, we parse the [date] from the db into a 'date':
+                # At every cycle, we parse the [date] from the db into a 'date':
                 # if the date is past, color it with the color chose by the user in the config file
                 # if the date is the same as the current day (a.k.a event today) then mark it with a 'X'
                 datel = parseDate(event['date'])

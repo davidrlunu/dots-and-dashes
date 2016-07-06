@@ -1,0 +1,15 @@
+# this file goes in ~
+default_color a5adff
+default_shade_color black
+alignment top_right
+gap_x 55
+gap_y 340
+minimum_size 160 350
+maximum_width 160
+color3 494a5b
+color1 a5adff
+imlib_cache_size 0
+#imlib_cache_flush_interval 10
+TEXT
+${include /home/$USER/.conky/templeterino.conf}
+${execpi 1800 python3 /home/$USER/.conky/weather/wtr.py}

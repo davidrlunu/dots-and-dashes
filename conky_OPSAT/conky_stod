@@ -1,0 +1,13 @@
+default_color 494a5b
+alignment top_right
+gap_x 60
+gap_y 820
+minimum_size 380 200
+maximum_width 380
+TEXT
+${color 494a5b}${execp cat /home/$USER/.conky/.shitstodo | sed 's/^/├─ /'}
+└─────────────────────────────────────────────────────${color}
+
+#${color darkcyan}${execpi 1800 python3 /home/$USER/.conky/calendar/pycal.py -t}${color}
+${execpi 1800 python3 /home/$USER/.conky/calendar/pycal.py -t}
+${include /home/$USER/.conky/templeterino.conf}

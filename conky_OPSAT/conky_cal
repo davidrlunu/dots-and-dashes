@@ -1,0 +1,18 @@
+# this file goes in ~
+default_color 494a5b
+default_shade_color black
+alignment top_right
+gap_x 265
+gap_y 340
+minimum_size 160 250
+maximum_width 160
+##color1 d05400
+color1 a5adff
+color2 b4b4b4
+color3 494a5b
+imlib_cache_size 0
+#imlib_cache_flush_interval 10
+TEXT
+${include /home/$USER/.conky/templeterino.conf}
+${color3}╭┈                  ┈╮${color}
+${execpi 60 python3 /home/$USER/.conky/calendar/pycal.py}

@@ -3,12 +3,13 @@
 
 #Set True or False if you want grid calendar or plain text view.
 grid = True
+# grid = False
 
 #Set colors you want to display in your calendar; You can use either hex codes or color names.
 color_header = '494a5b'  #This is the color of the header containing year, month name and week day names
 color_grid = '494a5b'    #This is the color of the grid elements (border and inner row separators
-color_currday = 'af2445' #This is the color of the current day to be displayed in the calendar
-color_event = 'darkcyan' #This is the color of FUTURE events to come, to be displayed in the calendar
+color_currday = 'a5adff' #This is the color of the current day to be displayed in the calendar
+color_event = 'af2445' #This is the color of FUTURE events to come, to be displayed in the calendar
 color_pevent = 'sienna'  #This is the color of PAST events to be shown on the calendar
 
 #This variable sets the date separator in the context 01/01/2001 where "/" is the separator
@@ -27,7 +28,7 @@ ignore_cache = True
 
 #The length of the note to display in the conky, based on the width of the conky window
 # since conky is ignorant of the newline escape character
-note_length = 48
+note_length = 40
 
 #Previous notes and number of max notes to display.
 # Hypothesis: You have previous notes of past events that by default are not displayed,

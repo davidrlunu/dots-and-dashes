@@ -1,0 +1,12 @@
+minimum_size 270 20
+maximum_width 270
+alignment tl
+gap_x 820
+gap_y 800
+own_window_argb_visual yes
+own_window_argb_value 0
+default_color 494b5a
+uppercase no
+TEXT
+/boot/ ${fs_used_perc /boot}%     /usr/ ${fs_used_perc /usr}%     /home/ ${fs_used_perc /home}%
+${include /home/$USER/.conky/templeterino.conf}
