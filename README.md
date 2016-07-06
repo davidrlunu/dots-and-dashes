@@ -35,7 +35,7 @@ b. The spinning gif in the middle of the screen, it'salso 100% eye-candy and fir
 
 c. The calendar per se, it just werks but if you don't want all the unicode-art, please read the documentation of it. I like to think that i covered pretty much every customization preference. 
 
-d. The whatsapp notification counter. I think this is the most optional feature.
+d. The whatsapp notification counter. I think this is the most optional feature. If you are going to use it, make sure to start the dbus-mon.py together with "whatsie" at launch (the conky_notifs will take care of killing both itself and the dbus-mon.py, on quitting whatsie) 
 
 e. inside the CPU histogram ring, there is a 2 pixel thin ring which serves *ME* to know the aproximative level of the sound volume. It resides in the 'cpu_rings.lua' file, just in case you want to get rid of it or find it odd.
 
