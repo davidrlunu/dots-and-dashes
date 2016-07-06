@@ -41,3 +41,4 @@ e. inside the CPU histogram ring, there is a 2 pixel thin ring which serves *ME*
 
 That's it, enjoy! 
 
+![Screenshot](https://i.imgur.com/RbYmYmV.png)
