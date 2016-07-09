@@ -1,0 +1,32 @@
+conky.config = {
+    update_interval=1,
+    background=false,
+    text_buffer_size=2048,
+    double_buffer=true,
+    no_buffers=true,
+    use_xft=true,
+    font='monospace:pixelsize=11',
+    draw_shades=false,
+    override_utf8_locale=true,
+    own_window=true,
+    own_window_type='normal',
+    own_window_class='Conky',
+    own_window_transparent=true,
+    own_window_hints='undecorated,below,sticky,skip_taskbar,skip_pager',
+    own_window_colour='000000',
+
+	default_color = '#494a5b',
+	alignment = 'top_right',
+	gap_x = 60,
+	gap_y = 820,
+	minimum_width = 380, minimum_height = 200,
+	maximum_width = 380,
+};
+
+conky.text = [[
+${color 494a5b}${execp cat /home/$USER/.conky/.shitstodo | sed 's/^/├─ /'}
+└─────────────────────────────────────────────────────${color}
+
+#${color darkcyan}${execpi 1800 python3 /home/draven/.conky/calendar/pycal.py -t}${color}
+${execpi 1800 python3 /home/draven/.conky/calendar/pycal.py -t}
+]];

@@ -1,0 +1,32 @@
+conky.config = {
+    update_interval=1,
+    background=false,
+    text_buffer_size=2048,
+    double_buffer=true,
+    no_buffers=true,
+    use_xft=true,
+    font='monospace:pixelsize=11',
+    draw_shades=false,
+    override_utf8_locale=true,
+    own_window=true,
+    own_window_type='normal',
+    own_window_class='Conky',
+    own_window_transparent=true,
+    own_window_hints='undecorated,below,sticky,skip_taskbar,skip_pager',
+    own_window_colour='000000',
+
+	default_color = '#a5adff',
+	minimum_width = 100, minimum_height = 40,
+	maximum_width = 100,
+	alignment = 'top_right',
+	gap_x = 320,
+	gap_y = 690,
+    -- ${voffset -85}${exec cat /tmp/mails | tail -n +2}
+};
+
+conky.text = [[
+
+${texeci 180 python3 /home/draven/.conky/mail.py}
+${image /home/draven/.conky/Mail.png -s 40x40 -p 10,40 -n}
+${goto 85}${font DIN:pixelsize=30}${exec cat /tmp/mails | head -n 1}${font}
+]];

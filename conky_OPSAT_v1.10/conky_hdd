@@ -1,0 +1,32 @@
+conky.config = {
+    update_interval=1,
+    background=false,
+    text_buffer_size=2048,
+    double_buffer=true,
+    no_buffers=true,
+    use_xft=true,
+    font='monospace:pixelsize=11',
+    draw_shades=false,
+    override_utf8_locale=true,
+    own_window=true,
+    own_window_type='normal',
+    own_window_class='Conky',
+    own_window_transparent=true,
+    own_window_hints='undecorated,below,sticky,skip_taskbar,skip_pager',
+    own_window_colour='000000',
+
+	minimum_width = 300, minimum_height = 20,
+	maximum_width = 300,
+	alignment = 'top_left',
+	gap_x = 820,
+	gap_y = 800,
+	own_window_argb_visual = true,
+	own_window_argb_value = 0,
+	default_color = '#494b5a',
+	uppercase = false,
+-- Lua Load  #
+};
+
+conky.text = [[
+/boot/ ${fs_used_perc /boot}%     /usr/ ${fs_used_perc /usr}%     /home/ ${fs_used_perc /home}%
+]];

@@ -1,0 +1,37 @@
+[
+    {
+        "date": "30/4/2016", 
+        "id": "b3e2", 
+        "note": "Fine del mese aprile"
+    }, 
+    {
+        "date": "30/4/2016", 
+        "id": "ac96", 
+        "note": "Fine del mese aprile"
+    }, 
+    {
+        "date": "19/5/2016", 
+        "id": "c441", 
+        "note": "Lorem ipsum dolor siat met e poi non ricordo mai come continua sta frase di testo dummy però aggiungerò del mio, tanto questo è solo un test"
+    }, 
+    {
+        "date": "19/5/2016", 
+        "id": "ebd0", 
+        "note": "FOO"
+    }, 
+    {
+        "date": "19/5/2016", 
+        "id": "bf01", 
+        "note": "BAR"
+    }, 
+    {
+        "date": "31/5/2016", 
+        "id": "a757", 
+        "note": "Fine del mese"
+    }, 
+    {
+        "date": "30/6/2016", 
+        "id": "1426", 
+        "note": "BAZ"
+    }
+]

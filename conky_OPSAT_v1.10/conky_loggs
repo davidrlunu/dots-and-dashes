@@ -1,0 +1,37 @@
+conky.config = {
+    update_interval=1,
+    background=false,
+    text_buffer_size=2048,
+    double_buffer=true,
+    no_buffers=true,
+    use_xft=true,
+    font='monospace:pixelsize=11',
+    draw_shades=false,
+    override_utf8_locale=true,
+    own_window=true,
+    own_window_type='normal',
+    own_window_class='Conky',
+    own_window_transparent=true,
+    own_window_hints='undecorated,below,sticky,skip_taskbar,skip_pager',
+    own_window_colour='000000',
+
+	alignment = 'top_left',
+	minimum_width = 540, minimum_height = 350,
+	maximum_width = 540,
+	gap_x = 55,
+	gap_y = 765,
+	default_color = '#494a5b',
+	color2 = '#d05400',
+	color3 = '#b30000',
+};
+
+conky.text = [[
+
+  ╭╴               ╶╮
+       ${color a5adff}SYS LOGS${color }   
+  ╰╴               ╶╯
+${execpi 60 sudo tail -n 15 /var/log/messages | cut -c1-90 | awk '{$1=$2=$4=""; print $0}' | sed -e 's/kernel/${color af2445}kernel${color}/' -e 's/root/${color 23ada0}root${color}/'}
+
+
+  UPTIME: ${execi 60 uptime | awk '{print $3 $4 $5}'}
+]];

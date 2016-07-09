@@ -1,0 +1,25 @@
+conky.config={
+background=false,
+use_xft=true,
+font='Droid Sans :pixelsize=50',
+update_interval=1.0,
+total_run_times=0,
+own_window=true,
+own_window_type=desktop,
+own_window_argb_visual=true,
+own_window_argb_value=0,
+own_window_hints='undecorated,below,sticky,skip_taskbar,skip_pager',
+double_buffer=true,
+default_color='23232a',
+color2='a5adff',
+alignment='top_right',
+gap_x=65,
+gap_y=60,
+no_buffers=true,
+cpu_avg_samples=2,
+text_buffer_size=1024
+};
+
+conky.text = [[
+${execp /home/draven/.conky/biclock}
+]]

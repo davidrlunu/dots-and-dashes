@@ -1,0 +1,30 @@
+conky.config = {
+	default_color = '#a5adff',
+	alignment = 'top_left',
+	gap_x = 620,
+	gap_y = 300,
+	color3 = '#af2445',
+    use_xft = true,
+    -- font = 'Monospace:pixelsize=12',
+
+	own_window = true,
+	own_window_type = 'normal',
+	own_window_transparent = true,
+	own_window_hints = 'undecorated,below,sticky,skip_taskbar,skip_pager',
+	own_window_argb_visual = true,
+	own_window_colour = '#000000',
+	own_window_argb_value = 0,
+	minimum_width = 700, minimum_height = 600,
+	maximum_width = 700,
+	lua_load = '~/.conky/sensors.lua',
+	lua_draw_hook_pre = 'sensors_rings',
+};
+
+conky.text = [[
+${font Monospace :pixelsize=12}
+${voffset 200}${goto 30}CPU
+${goto 30}${exec sensors | grep Phys | cut -c 18-24}
+${voffset -30}${goto 640}GPU
+${goto 620}${exec nvidia-settings -q gpucoretemp -t | head -n 1}.0°C
+${font}
+]];

@@ -1,0 +1,373 @@
+﻿#! /usr/bin/python3
+# vim: set fileencoding=UTF-8 :
+import sys
+import math
+import fileinput
+import os.path, time
+import calendar
+import datetime
+import uuid
+import json
+
+
+now = datetime.datetime.now()
+year = now.year
+month = now.month
+_date_separator = '/'
+_date_format = '%d' + _date_separator + '%m' + _date_separator + '%Y'
+_db_path = os.environ['HOME'] + '/.conky/calendar/event_db.json'
+_ignore_cache = True
+# Calculate how many chars to display on a single row of an event annotation, based on the width of the conky
+_note_length = 49
+
+
+def isCached(file_path):
+    if _ignore_cache:
+        return False
+    try:
+        timestamp = datetime.datetime.fromtimestamp(os.path.getmtime(file_path)).strftime(_date_format)
+        return now.strftime(_date_format) == timestamp
+    except OSError:
+        return False
+
+
+# Date validation based on input
+
+def validDate(date_string):
+    try:
+        datetime.datetime.strptime(date_string, _date_format)
+    except ValueError:
+        print("Date should be DD/MM/YYYY")
+        return False
+    return True
+
+
+def colorCal(color='', val=''):
+    if val:
+        return '${color ' + color + '}' + str(val) + '${color}'
+    if color:
+        color = ' ' + color
+    return '${color'+color+'}'
+
+
+def parseDate(date=''):
+    return date.split(_date_separator)
+
+def compareDates(actual_date, date_from_db):
+    if len(actual_date) == len(date_from_db) == 3:
+        for i in range(3):
+            if str(actual_date[i]) != str(date_from_db[i]):
+                return False
+        return True
+    return False
+
+
+def dateIndexParser(dateList):
+    return ''.join([v.rjust(2, '0') for v in dateList[::-1]])
+
+
+def dbRead():
+    try:
+        with open(_db_path) as fileread:
+            return json.load(fileread)
+    except IOError:
+        return []
+
+dblist = dbRead()
+
+def updateCalendar(m=month, y=year):
+    m = int(m)
+    y = int(y)
+
+    cal = calendar.monthcalendar(y, m)
+    m_name = calendar.month_name[m]
+    w_header = calendar.weekheader(2)
+
+    str_calendar = ''
+    str_calendar += (colorCal('494a5b') + '│' + str(y).center(20, ' ') + '│' + '\n')
+    str_calendar += ('│' + m_name.center(20, ' ').upper() + '│' + '\n' )
+    str_calendar += ('│' + w_header.upper() + '│' + colorCal() + '\n')
+    str_calendar += (colorCal('494a5b', '├─ ┼  ┼  ┼  ┼  ┼  ┼ ─┤') + '\n')
+    for rows, cols in enumerate(cal):
+        l1 = []
+        day = now.day
+        current_date = [str(day), str(month), str(year)]
+        for n in cols:
+            n = '' if n==0 else n
+            n_pad = str(n).rjust(2)
+            for event in dblist:
+                if not n:
+                    break
+
+                datel = parseDate(event['date'])
+                if dateIndexParser(datel) < dateIndexParser(current_date):
+                    n = colorCal('sienna', n_pad) if compareDates([n,m,y], datel) else n
+                if dateIndexParser(datel) == dateIndexParser(current_date):
+                    n = colorCal('sienna', 'X') if compareDates([n,m,y], datel) else n
+
+                n = colorCal('darkcyan', n_pad) if compareDates([n,m,y], datel) else n
+            n = colorCal('af2445', n_pad) if n==day and m==month and y==year else n
+            n = str(n).rjust(2)
+            l1.append(n)
+        str_calendar += ( colorCal('494a5b') + '│' + colorCal() + ' '.join(map(str,l1)) + colorCal('494a5b') + '│' + colorCal() + '\n')
+
+        if rows != (len(cal)-1):
+            str_calendar += (colorCal('494a5b') + '├──┼──┼──┼──┼──┼──┼──┤' + colorCal() + '\n')
+
+    str_calendar += (colorCal('494a5b') + '╰──┴──┴──┴──┴──┴──┴──╯' + colorCal() + '\n')
+
+    if not _ignore_cache:
+        with open('/tmp/calendar', 'w+') as calendar_stamp:
+            calendar_stamp.write(str_calendar)
+    print(str_calendar)
+
+
+
+
+
+def saveEvent(arguments):
+
+    _date = _note = stringed_list = ''
+    _id = str(uuid.uuid4())[:4]
+
+    for i, arg in enumerate(arguments):
+        if i == 0:
+            _date = arg
+            _date_array = parseDate(_date)
+            _date_len = len(_date_array)
+
+            if _date_len == 1:
+                _date += _date_separator + str(month) + _date_separator + str(year)
+            if _date_len == 2:
+                _date += _date_separator + str(year)
+            if not validDate(_date):
+                sys.exit(2)
+
+        elif i == 1:
+            _note = arg
+        elif i == 2:
+            _id = arg
+        else:
+            print("Too many args")
+            sys.exit(2)
+
+
+
+    new_date = dateIndexParser(_date.split(_date_separator))
+
+    index = 0
+    global dblist
+
+    for obj in dblist:
+        current_date = dateIndexParser(obj["date"].split(_date_separator))
+        if new_date < current_date:
+            break
+
+        index += 1
+
+    event = { "date": _date, "note": _note, "id": _id}
+    print("Insert to index: ", index)
+    dblist.insert(index, event)
+
+
+    json_list = json.dumps(dblist)
+    with open(_db_path, 'w') as filesave:
+        json.dump(dblist, filesave, sort_keys=True, indent=4, ensure_ascii=False)
+        print("Saved to DB : " + '{0:}  {1:}  {2:}'.format(_date, _note, str(_id)))
+
+
+
+def editEvent(changeid):
+    global dblist
+    index = 0
+    for obj in dblist:
+        current_date = dateIndexParser(obj["date"].split(_date_separator))
+        if changeid == obj['id']:
+            edit_choice = input("Want to change this event's:\n"\
+                    + '[1] Note: ' + str(obj['note']) + '\n'\
+                    + '[2] Date: ' + str(obj['date']) + '\n')
+            if edit_choice == '1':
+                notes = obj['note']
+                new_note = str(input("Change old note:    « "\
+                        + str(obj['note'])\
+                        + " »    to new note:\n"))
+                obj['note'] = new_note
+                print("New note updated")
+                break
+
+            elif edit_choice == '2':
+                obj['date'] = input("Change old date    « "\
+                        + str(obj['date'])\
+                        + " »    into new date\n")
+                if validDate(obj['date']):
+                    temp_obj = dblist.pop(index)
+                    saveEvent([obj['date'], obj['note'], obj['id']])
+                    print("New date updated")
+                    sys.exit(2)
+        index += 1
+
+    json_list = json.dumps(dblist)
+    with open(_db_path, 'w') as filesave:
+        json.dump(dblist, filesave, sort_keys=True, indent=4, ensure_ascii=False)
+
+
+def rmEvent(id_mod):
+    global dblist
+    index = 0
+    for event in dblist:
+        if id_mod == event['id']:
+            dblist.pop(index)
+        index += 1
+    with open(_db_path, 'w') as fileup:
+        json.dump(dblist, fileup, sort_keys=True, indent=4, ensure_ascii=False)
+        print("Updating DB")
+
+
+
+def spezNote(note, first_note):
+
+    n_rows = math.ceil(len(note) / _note_length)
+    note_full = ''
+    for row_index in range(1, n_rows + 1):
+        frm = (row_index - 1) * _note_length
+        to = frm + _note_length
+        note_partial = note[frm:to]
+        if not (first_note and row_index == 1):
+            note_partial = '\n' + note_partial.rjust(14 + len(note_partial))
+        note_full += note_partial
+
+    return note_full
+
+
+
+def updateEvents():
+
+    eventlist = ''
+    temp_notes = []
+
+    previous_notes = 2
+    max_notes = 5
+
+    for eventIndex, event in enumerate(dblist):
+
+        willChange = False
+        last = eventIndex == (len(dblist) - 1);
+        if not last:
+            willChange = dateIndexParser(dblist[eventIndex + 1]["date"].split(_date_separator))\
+                    > dateIndexParser(event["date"].split(_date_separator))
+
+        temp_notes.append('[ ' + event['id'] + ' ] ' + event["note"])
+
+        if willChange or last:
+            note_full = ''
+            for note in temp_notes:
+                note_full += spezNote(note, note == temp_notes[0])
+                if note != temp_notes[len(temp_notes) - 1]:
+                    note_full += '\n'
+
+            d_parse = parseDate(event['date'])
+            d_parse = d_parse[0].rjust(2, '0')\
+                    + _date_separator + d_parse[1].rjust(2, '0')\
+                    + _date_separator + d_parse[2]
+
+            eventlist += '[ ' + colorCal('darkcyan', d_parse) + ' ]' + note_full
+
+
+            if event != dblist[len(dblist) - 1]:
+                eventlist += '\n'
+            temp_notes = []
+
+
+
+    if not _ignore_cache:
+        try:
+            with open('/tmp/eventlist', 'w+') as tmpfile:
+                    tmpfile.write(eventlist)
+        except IOError:
+            return
+
+    print(eventlist)
+
+
+
+
+def main(argv):
+
+    flag = ''
+    arguments = []
+
+    for i, arg in enumerate(argv):
+        if i == 0:
+            flag = arg
+        else:
+            arguments.append(arg)
+
+    if flag == '':
+        flag = '-c'
+
+    if flag == '-c':
+        if len(arguments) == 0:
+
+            if not isCached('/tmp/calendar'):
+                updateCalendar()
+            else:
+                with open('/tmp/calendar', 'r') as calendar_stamp:
+                    print(calendar_stamp.read())
+
+            sys.exit(2)
+        else:
+
+            marg_array = arg.split(',')
+            for marg in marg_array:
+                my_array = marg.split(':')
+                m = my_array[0]
+                y = my_array[1] if len(my_array)==2 else year
+
+                temp_date = '1' + _date_separator + str(m) + _date_separator + str(y);
+
+
+                if(validDate(temp_date)):
+                    updateCalendar(m,y)
+            sys.exit(0)
+
+    elif flag == '-t':
+        if not isCached('/tmp/eventlist'):
+            updateEvents()
+        else:
+            with open('/tmp/eventlist', 'r') as eventlist_stamp:
+                print(eventlist_stamp.read())
+
+        sys.exit(2)
+
+    elif flag == '-e':
+        if len(arguments):
+            saveEvent(arguments)
+            updateEvents()
+            updateCalendar()
+
+    elif flag == '-m':
+        if len(arguments) == 0:
+            sys.exit(0)
+        else:
+            id_mod = ''.join(arguments)
+            editEvent(id_mod)
+
+    elif flag == '-d':
+        yes = set(['yes', 'y', 'Y', 'ye', 'YES'])
+        no = set(['n', 'N', 'No', 'NO', 'nope', ''])
+        if len(arguments) == 0:
+            choice = input('Remove entire DB?\n[y/N]')
+            if choice in yes:
+                os.remove(_db_path)
+            elif choice in no:
+                sys.exit(2)
+            else:
+                sys.stdout.write('Please answer with one of: ' + str(yes) + ' or ' + str(no) + '\n')
+        else:
+            id_parse = ''.join(arguments)
+            rmEvent(id_parse)
+
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
