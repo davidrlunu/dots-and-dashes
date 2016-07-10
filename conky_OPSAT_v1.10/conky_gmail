@@ -26,7 +26,7 @@ conky.config = {
 
 conky.text = [[
 
-${texeci 180 python3 /home/draven/.conky/mail.py}
-${image /home/draven/.conky/Mail.png -s 40x40 -p 10,40 -n}
+${texeci 180 python3 /home/$USER/.conky/mail.py}
+${image /home/$USER/.conky/Mail.png -s 40x40 -p 10,40 -n}
 ${goto 85}${font DIN:pixelsize=30}${exec cat /tmp/mails | head -n 1}${font}
 ]];
