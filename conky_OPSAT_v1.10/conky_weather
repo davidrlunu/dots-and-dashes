@@ -30,5 +30,5 @@ conky.config = {
 
 conky.text = [[
 
-${execpi 1800 python3 /home/draven/.conky/weather/wtr.py}
+${execpi 1800 python3 /home/$USER/.conky/weather/wtr.py}
 ]];
