@@ -44,5 +44,5 @@ ${execpi 60 cat /home/$USER/.conky/.speeds | sed -e 's/Ping/PNG/' -e 's/Download
 
 
 ${color 494a5b}${execi 3600 ip route}${color}
-##${image /home/draven/.conky/asset.png -p 0,0 -n}
+##${image /home/$USER/.conky/asset.png -p 0,0 -n}
 ]];
