@@ -34,5 +34,5 @@ conky.text = [[
 ├─  ${color3}State${color}          Local Address:Port           ${color3}Peer Address:Port${color}       ─┤
 ╰──         ╶┼╴                        ╶┼╴                             ──╯
 ${execpi 5 ss -t -a | grep -e "ESTAB" | tail -n 9 | awk '{print $1, $4, $5}' | column -t -o "          " | sed -e 's/\(\([^ ]* *\)\{2\}\)\([^ ]*\)/\1${color3}\3${color}/' -e 's/\(\([^ ]* *\)\{0\}\)\([^ ]*\)/\1${color3}\3${color}/' -e 's/^/    /' -e '$s/^.../╶┼╴/' -e '$s/$/    ╶┼╴/'}
-${image /home/draven/.conky/connections.png -p 30,0 -n}
+${image /home/$USER/.conky/connections.png -p 30,0 -n}
 ]];
