@@ -21,5 +21,5 @@ text_buffer_size=1024
 };
 
 conky.text = [[
-${execp /home/draven/.conky/biclock}
+${execp /home/$USER/.conky/biclock}
 ]]
