@@ -40,5 +40,5 @@ ${voffset -120}${color0}${execpi 5 top -b -n 1 -o %MEM | head -n 15  | tail -n 8
 
 ${goto 70}${color1}${exec grep [0-9] /proc/loadavg | awk '{print $1}'}    ${exec grep [0-9] /proc/loadavg | awk '{print $2}'}    ${exec grep [0-9] /proc/loadavg | awk '{print $3}'}
 ${voffset -13}${goto 360}$mem / $memmax - ${fs_used_perc /tmp}% tmp${color}
-${image /home/draven/.conky/processes.png -p 0,30 -n}
+${image /home/$USER/.conky/processes.png -p 0,30 -n}
 ]];
