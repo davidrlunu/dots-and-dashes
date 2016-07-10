@@ -32,5 +32,5 @@ conky.config = {
 conky.text = [[
 
 ${color3}╭┈                  ┈╮${color}
-${execpi 60 python3 /home/draven/.conky/calendar/pycal.py}
+${execpi 60 python3 /home/$USER/.conky/calendar/pycal.py}
 ]];
