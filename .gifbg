@@ -7,10 +7,8 @@ exit 1
 fi
 
 #get screen resolution
-#SCRH=`xrandr | awk '/current/ { print $8 }'`
-SCRH=1920
-SCRW=1080
-SCRW=${SCRW%\,}
+SCRH=`xrandr | awk '/current/ { print $8 }'`
+SCRW=`xrandr | awk '/current/ { print $10 }' | sed 'g/,//'`
 
 #get gif resolution
 IMGHW=`gifsicle --info $1 | awk '/logical/ { print $3 }'`
